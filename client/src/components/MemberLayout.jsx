@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useOutletContext } from 'react-router-dom';
 import { logoutUser } from '../api/authApi';
 
 // Keeps member navigation in one place so each signed-in page only needs its own content.
 export default function MemberLayout() {
+  const user = useOutletContext();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
@@ -30,15 +31,15 @@ export default function MemberLayout() {
     <div className="member-layout">
       <nav className="member-nav" aria-label="Member navigation">
         <NavLink to="/questionnaire">Questionnaire</NavLink>
-        <NavLink to="/challenges">Challenge selection</NavLink>
-        <NavLink to="/dashboard">Challenge KPIs</NavLink>
+        <NavLink to="/challenges">Challenges</NavLink>
+        <NavLink to="/dashboard">Dashboard</NavLink>
         <NavLink to="/leaderboard">Leaderboard</NavLink>
         <NavLink to="/inbox">Encouragement</NavLink>
         <button onClick={handleLogout} disabled={pending}>{pending ? 'Logging out…' : 'Log out'}</button>
       </nav>
       {error && <p role="alert">{error}</p>}
       {/* React Router puts the selected member page here, below the shared navigation. */}
-      <Outlet />
+      <Outlet context={user} />
     </div>
   );
 }

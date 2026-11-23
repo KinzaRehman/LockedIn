@@ -41,7 +41,7 @@ function Questionnaire() {
       <p className="questionnaire-note">Use these questions to reflect.</p>
       <ol className="questionnaire-questions">
         {writtenQuestions.slice(0, 2).map((question, index) => (
-          <WrittenQuestion skey={question.name} question={question} number={index + 1} />
+          <WrittenQuestion key={question.name} question={question} number={index + 1} />
         ))}
         <li className="questionnaire-question">
           <label htmlFor="commitment-days">3. How many days a week can you realistically commit?</label>
@@ -57,7 +57,7 @@ function Questionnaire() {
           <WrittenQuestion key={question.name} question={question} number={index + 4} />
         ))}
       </ol>
-      <Link to="/dashboard">Continue</Link>
+      <Link to="/challenges">Continue</Link>
     </main>
   );
 }

@@ -8,8 +8,8 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
-import Questionnaire from './pages/Questionnaire';
 import Challenges from './pages/Challenges';
+import Questionnaire from './pages/Questionnaire';
 import Leaderboard from './pages/Leaderboard';
 import Inbox from './pages/Inbox';
 import MemberLayout from './components/MemberLayout';
@@ -39,8 +39,8 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<MemberLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/questionnaire" element={<Questionnaire />} />
         <Route path="/challenges" element={<Challenges />} />
+        <Route path="/questionnaire" element={<Questionnaire />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/inbox" element={<Inbox />} />
         </Route>

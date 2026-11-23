@@ -1,4 +1,4 @@
-// One-time account migration: copies old nested credentials into current fields and replaces the legacy index. Password hashes are preserved.
+// One-time account migration: copies old credentials and retires indexes for obsolete fields.
 require('dotenv').config({ path: require('node:path').join(__dirname, '../.env'), quiet: true });
 const mongoose = require('mongoose');
 
@@ -13,7 +13,7 @@ async function migrate() {
     const changes = accounts.map(account => {
       const email = (account.email || account.local?.email || '').trim().toLowerCase();
       const password = account.password || account.local?.password;
-      const username = account.username || `member-${account._id.toString()}`;
+      const username = account.username?.trim() || account.userName?.trim() || `member-${account._id.toString()}`;
       if (!email || !password) throw new Error('An account is missing an email or password. No migration applied.');
       if (emails.has(email) || usernames.has(username)) throw new Error('Duplicate accounts require review. No migration applied.');
       emails.add(email);
@@ -28,8 +28,13 @@ async function migrate() {
     await users.createIndex({ email: 1 }, { unique: true });
     await users.createIndex({ username: 1 }, { unique: true });
     const indexes = await users.indexes();
-    const legacy = indexes.find(index => index.unique && index.key['local.email'] === 1);
-    if (legacy) await users.dropIndex(legacy.name);
+    const legacyFields = ['local.email', 'userName'];
+    for (const index of indexes) {
+      const fields = Object.keys(index.key);
+      if (index.unique && fields.length === 1 && legacyFields.includes(fields[0])) {
+        await users.dropIndex(index.name);
+      }
+    }
     console.log(`Migrated ${changes.length} accounts. Existing password hashes and legacy fields preserved. Current email and username indexes installed.`);
   } finally {
     await mongoose.disconnect();

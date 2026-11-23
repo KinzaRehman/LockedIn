@@ -41,6 +41,5 @@ lerna-debug.log*
 Thumbs.db
 Desktop.ini
 
-# Local project notes and exported theme patches
+# Local project notes
 /systemArchitect/
-grain-of-salt-theme.patch

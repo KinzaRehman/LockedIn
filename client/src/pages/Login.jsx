@@ -79,9 +79,7 @@ function Login() {
       </form>
 
       <p><Link to="/forgot-password">Forgot your password?</Link></p>
-      <p>
-        No account? <Link to="/signup">Sign up</Link>
-      </p>
+      <p>No account? <Link to="/signup">Sign up</Link></p>
     </main>
   );
 }

@@ -76,10 +76,15 @@ exports.signup = async (req, res) => {
     });
 
   } catch (error) {
-    if (error.code === 11000) {
+    if (error.code === 11000 && (error.keyPattern?.email || error.keyPattern?.username)) {
       return res.status(409).json({
         message: 'Email or username already exists.'
       });
+    }
+
+    if (error.code === 11000 && (error.keyPattern?.['local.email'] || error.keyPattern?.userName)) {
+      console.error('Signup blocked by a legacy account index. Run npm run migrate:users.');
+      return res.status(503).json({ message: 'Signup is temporarily unavailable while the account database is updated.' });
     }
 
     console.error(error);

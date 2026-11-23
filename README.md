@@ -48,4 +48,4 @@ Validation: `npm run build --prefix client`, `npm run lint --prefix client`, and
 
 ### Older account format
 
-For databases created with the old `local.email` and `local.password` format, run `npm run migrate:users --prefix server` once. The migration checks for duplicate emails before writing, copies existing password hashes to the current fields, normalizes emails, and replaces the old `local.email` unique index with email and username indexes. Legacy fields are retained.
+For databases created with the old `local.email`, `local.password`, or `userName` fields, run `npm run migrate:users --prefix server` once. The migration checks for duplicate accounts before writing, copies existing password hashes, normalizes email addresses, and installs unique indexes on `email` and `username` before removing the obsolete indexes on `local.email` and `userName`. Legacy fields are retained.
