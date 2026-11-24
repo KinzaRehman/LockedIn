@@ -22,6 +22,7 @@ function App() {
     <div className="site-layout">
       {/* Keyboard users can skip the repeated header and jump to the page content. */}
       <a className="skip-link" href="#main-content">Skip to content</a>
+      {/* The header and footer sit outside Routes so they stay visible as the page changes. */}
       <Header />
       <div id="main-content" className="site-content" tabIndex={-1}>
     {/* These routes can be opened without an existing login. */}
@@ -33,10 +34,12 @@ function App() {
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Visiting /reset starts a reset request. The emailed link opens /reset-password. */}
       <Route path="/reset" element={<Navigate to="/forgot-password" replace />} />
 
       {/* ProtectedRoute checks the session. MemberLayout adds the navigation shared by its child pages. */}
       <Route element={<ProtectedRoute />}>
+        {/* The matched page renders inside MemberLayout, below the signed-in navigation. */}
         <Route element={<MemberLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/challenges" element={<Challenges />} />
