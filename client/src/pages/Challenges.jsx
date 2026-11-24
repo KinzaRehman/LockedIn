@@ -1,61 +1,75 @@
-import { useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
-import { challenges, readChallengeSelection, saveChallengeSelection } from '../challenges/challenges';
+// Challenge catalogue and per-user challenge selection.
+//
+// Challenges.jsx imports this module. The selection is stored on this
+// device (localStorage), keyed by user id, so each account keeps its own
+// saved progress. Edit the `challenges` list below to change what the
+// Challenge selection page offers — reading is the only challenge with a
+// goal the user sets here (daily minutes).
 
-export default function Challenges() {
-  // The member layout supplies the userid so each account has its own saved progress.
-  const { id: userId } = useOutletContext();
-  const navigate = useNavigate();
-  // Load the saved choices once, then let the user edit them locally until they save.
-  const [current] = useState(() => readChallengeSelection(userId));
-  const [selected, setSelected] = useState(current.selected);
-  const [minutes, setMinutes] = useState(current.entries.reading?.minutes ?? '');
-  const [error, setError] = useState('');
+export const challenges = {
+  reading: {
+    title: 'Reading',
+    description: 'Read every day and hit your daily minutes goal.',
+  },
+  workout: {
+    title: 'Workout',
+    description: 'Move your body every day, even if it is just a short session.',
+  },
+  water: {
+    title: 'Drink water',
+    description: 'Hit your daily water goal.',
+  },
+  meditation: {
+    title: 'Meditation',
+    description: 'Take a few quiet minutes for yourself every day.',
+  },
+  journaling: {
+    title: 'Journaling',
+    description: 'Write a few lines every day about how it went.',
+  },
+  noSugar: {
+    title: 'No added sugar',
+    description: 'Skip added sugar for the day.',
+  },
+};
 
-  // Add a checked challenge to the draft list or remove an unchecked one.
-  function toggleChallenge(type, checked) {
-    setSelected(previous => checked ? [...previous, type] : previous.filter(item => item !== type));
+const STORAGE_PREFIX = 'locked-in:challenges:';
+
+function storageKey(userId) {
+  return `${STORAGE_PREFIX}${userId ?? 'guest'}`;
+}
+
+function emptySelection() {
+  return { selected: [], entries: {} };
+}
+
+// Read the saved selection for one user. Returns { selected, entries }
+// and never throws — a missing or damaged saved value falls back to empty.
+export function readChallengeSelection(userId) {
+  try {
+    const raw = localStorage.getItem(storageKey(userId));
+    if (!raw) return emptySelection();
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.selected)) return emptySelection();
+    return {
+      selected: parsed.selected.filter(type => Object.hasOwn(challenges, type)),
+      entries: parsed.entries && typeof parsed.entries === 'object' ? parsed.entries : {},
+    };
+  } catch {
+    return emptySelection();
   }
+}
 
-  // Save the draft so the dashboard can read it when the user arrives.
-  function saveSelection(event) {
-    event.preventDefault();
-    try {
-      saveChallengeSelection(userId, selected, Number(minutes));
-      navigate('/dashboard');
-    } catch {
-      setError('Your challenge selection could not be saved on this device.');
-    }
+// Save the selection for one user. Throws when the browser cannot store
+// it (for example storage is full or unavailable), so the caller can
+// show an error instead of navigating away.
+export function saveChallengeSelection(userId, selected, minutes) {
+  const entries = {};
+  if (selected.includes('reading') && Number.isFinite(minutes) && minutes > 0) {
+    entries.reading = { minutes };
   }
-
-  return (
-    <main className="page-outline">
-      <h1>Challenge selection</h1>
-      <form className="challenge-form" onSubmit={saveSelection}>
-        <fieldset className="challenge-options">
-          <legend>Choose the challenges you want to track</legend>
-          {Object.entries(challenges).map(([type, challenge]) => (
-            <label className="challenge-option" key={type}>
-              <input type="checkbox" name="challenge" value={type} checked={selected.includes(type)}
-                onChange={event => toggleChallenge(type, event.target.checked)} />
-              <span><strong>{challenge.title}</strong><span>{challenge.description}</span></span>
-            </label>
-          ))}
-        </fieldset>
-
-        {/* Reading is the only challenge with a goal the user sets here. */}
-        {selected.includes('reading') && (
-          <label>
-            Daily reading goal in minutes
-            <input type="number" min="1" max="1440" step="1" required value={minutes}
-              onChange={event => setMinutes(event.target.value)} />
-          </label>
-        )}
-        {error && <p role="alert">{error}</p>}
-        <button className="landing-button" type="submit">
-          Save and continue
-        </button>
-      </form>
-    </main>
+  localStorage.setItem(
+    storageKey(userId),
+    JSON.stringify({ selected, entries }),
   );
 }
